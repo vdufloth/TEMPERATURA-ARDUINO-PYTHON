@@ -2,21 +2,30 @@
 import serial
 from datetime import datetime
 
-ARDUINO_LOCATION = '/dev/ttyACM0'
-SERIAL_PORT = 9600
+class DataRead:
+    def __init__(self, timestamp, humidity, temperature):
+        self.timestamp = timestamp
+        self.humidity = humidity
+        self.temperature = temperature
 
-class data:
-    
+class SerialReader:
+    def __init__(self, ArduinoLocation, SerialPort):
+        self.ArduinoLocation = ArduinoLocation
+        self.SerialPort = SerialPort
+        self.ser = serial.Serial(
+            port=self.ArduinoLocation,
+            baudrate=self.SerialPort,
+            parity=serial.PARITY_ODD,
+            stopbits=serial.STOPBITS_TWO,
+            bytesize=serial.SEVENBITS
+        )
 
-ser = serial.Serial(
-    port=ARDUINO_LOCATION,
-    baudrate=SERIAL_PORT,
-    parity=serial.PARITY_ODD,
-    stopbits=serial.STOPBITS_TWO,
-    bytesize=serial.SEVENBITS
-)
-while True:
-    if ser.isOpen():
-        print(datetime.now(), ser.readline())
-    else:
-        print(datetime.now(), 'Not open')
+    def startReading(self):
+        while True:
+            if self.ser.isOpen():
+                lineRead = self.ser.readline().decode("utf-8").split(sep=";")
+                dt = DataRead(datetime.now(), lineRead[0], lineRead[1])
+                print(dt.timestamp, dt.humidity, dt.temperature)
+                #db.saveOnDB(dt)
+            else:
+                print(datetime.now(), 'Not open')
