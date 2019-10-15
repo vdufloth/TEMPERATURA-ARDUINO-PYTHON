@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from SerialReader import SerialReader
+from ArduinoInterface import SerialReader
 
 ARDUINO_LOCATION = '/dev/ttyACM0'
 SERIAL_PORT = 9600

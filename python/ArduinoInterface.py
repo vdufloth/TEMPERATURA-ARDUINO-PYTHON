@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import serial
+from DatabaseInterface import Database
 from datetime import datetime
 
 class DataRead:
@@ -19,13 +20,13 @@ class SerialReader:
             stopbits=serial.STOPBITS_TWO,
             bytesize=serial.SEVENBITS
         )
+        self.db = Database()
 
     def startReading(self):
-        while True:
+        if True:
             if self.ser.isOpen():
                 lineRead = self.ser.readline().decode("utf-8").split(sep=";")
                 dt = DataRead(datetime.now(), lineRead[0], lineRead[1])
-                print(dt.timestamp, dt.humidity, dt.temperature)
-                #db.saveOnDB(dt)
+                self.db.insertRegister(dt.timestamp, dt.humidity, dt.temperature)
             else:
                 print(datetime.now(), 'Not open')
