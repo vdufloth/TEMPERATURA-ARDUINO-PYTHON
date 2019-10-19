@@ -2,31 +2,37 @@
 import serial
 from DatabaseInterface import Database
 from datetime import datetime
+from threading import Thread
 
-class DataRead:
-    def __init__(self, timestamp, humidity, temperature):
-        self.timestamp = timestamp
-        self.humidity = humidity
-        self.temperature = temperature
+ARDUINO_LOCATION = '/dev/ttyACM0'
+SERIAL_PORT = 9600
 
-class SerialReader:
-    def __init__(self, ArduinoLocation, SerialPort):
-        self.ArduinoLocation = ArduinoLocation
-        self.SerialPort = SerialPort
-        self.ser = serial.Serial(
-            port=self.ArduinoLocation,
-            baudrate=self.SerialPort,
-            parity=serial.PARITY_ODD,
-            stopbits=serial.STOPBITS_TWO,
-            bytesize=serial.SEVENBITS
-        )
-        self.db = Database()
 
-    def startReading(self):
-        if True:
+class SerialReader(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        try:
+            self.ArduinoLocation = ARDUINO_LOCATION
+            self.SerialPort = SERIAL_PORT
+            self.ser = serial.Serial(
+                port=self.ArduinoLocation,
+                baudrate=self.SerialPort,
+                parity=serial.PARITY_ODD,
+                stopbits=serial.STOPBITS_TWO,
+                bytesize=serial.SEVENBITS
+            )
+            self.db = Database()
+            self.keepReading = True
+        except Exception as error:
+            print('Erro ao conectar com arduino', error)
+            self.keepReading = False
+
+    def run(self):
+        while self.keepReading:
             if self.ser.isOpen():
                 lineRead = self.ser.readline().decode("utf-8").split(sep=";")
-                dt = DataRead(datetime.now(), lineRead[0], lineRead[1])
-                self.db.insertRegister(dt.timestamp, dt.humidity, dt.temperature)
+                time = datetime.now()
+                print("Registro capturado:", time, lineRead[0], lineRead[1])
+                self.db.insertRegister(time, lineRead[0], lineRead[1])
             else:
-                print(datetime.now(), 'Not open')
+                print('Porta serial não aberta:', datetime.now())
