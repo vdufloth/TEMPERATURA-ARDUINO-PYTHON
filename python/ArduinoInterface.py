@@ -1,4 +1,3 @@
-#!/usr/bin/python
 from threading import Thread
 import serial
 from datetime import datetime
