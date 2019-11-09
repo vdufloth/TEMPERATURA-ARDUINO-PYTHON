@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 from ArduinoInterface import SerialReader
 from time import sleep
 
