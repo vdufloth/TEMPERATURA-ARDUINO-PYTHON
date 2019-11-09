@@ -51,3 +51,7 @@ class SerialReader(Thread):
     def restartReading(self):
         print('Reiniciando leitura')
         self.keepReading = True
+
+    def setReadingInterval(self, seconds):
+        print('Alterando intervalo de leitura no Arduino para', seconds, 'segundos')
+        #Pass to arduino
