@@ -1,12 +1,12 @@
 #!/usr/bin/python
-import serial
-from DatabaseInterface import Database
-from datetime import datetime
 from threading import Thread
+import serial
+from datetime import datetime
+import requests
 
 ARDUINO_LOCATION = '/dev/ttyACM0'
 SERIAL_PORT = 9600
-
+POST_URL = ''
 
 class SerialReader(Thread):
     def __init__(self):
@@ -21,18 +21,34 @@ class SerialReader(Thread):
                 stopbits=serial.STOPBITS_TWO,
                 bytesize=serial.SEVENBITS
             )
-            self.db = Database()
             self.keepReading = True
         except Exception as error:
             print('Erro ao conectar com arduino', error)
             self.keepReading = False
 
     def run(self):
+        print('Iniciando leitura')
         while self.keepReading:
             if self.ser.isOpen():
                 lineRead = self.ser.readline().decode("utf-8").split(sep=";")
-                time = datetime.now()
-                print("Registro capturado:", time, lineRead[0], lineRead[1])
-                self.db.insertRegister(time, lineRead[0], lineRead[1])
+                time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                register = {'hora': time,
+                            'umidade': lineRead[0],
+                            'temperatura': lineRead[1],
+                            }
+                print('Enviando', register, 'para',POST_URL)
+                try:
+                    result = requests.post(POST_URL, data=register)
+                    print('Post result:', result.text)
+                except Exception as error:
+                    print('Erro ao enviar:', error)
             else:
-                print('Porta serial não aberta:', datetime.now())
+                print('Porta serial nao aberta:', datetime.now())
+    
+    def stopReading(self):
+        print('Parando leitura')
+        self.keepReading = False
+    
+    def restartReading(self):
+        print('Reiniciando leitura')
+        self.keepReading = True
