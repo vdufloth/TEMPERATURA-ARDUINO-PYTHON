@@ -4,31 +4,34 @@ from datetime import datetime
 import requests
 import json
 
-ARDUINO_LOCATION = '/dev/ttyACM0'
-SERIAL_PORT = 9600
-POST_URL = 'http://192.168.0.99/sist-distribuidos/api/data.php'
-
 
 class SerialReader(Thread):
     def __init__(self):
         Thread.__init__(self)
+
         try:
-            self.ArduinoLocation = ARDUINO_LOCATION
-            self.SerialPort = SERIAL_PORT
+            data = json.load(open('config.json'))
+            self.ARDUINO_LOCATION = data["arduino_location"]
+            self.SERIAL_PORT = data["serial_port"]
+            self.POST_URL = data["server_url"]
+        except Exception as error:
+            print('Error at opening config file:', error)
+
+        try:
             self.ser = serial.Serial(
-                port=self.ArduinoLocation,
-                baudrate=self.SerialPort,
+                port=self.ARDUINO_LOCATION,
+                baudrate=self.SERIAL_PORT,
                 parity=serial.PARITY_ODD,
                 stopbits=serial.STOPBITS_TWO,
                 bytesize=serial.SEVENBITS
             )
             self.keepReading = True
         except Exception as error:
-            print('Erro ao conectar com arduino', error)
+            print('Error at conecting to arduino:', error)
             self.keepReading = False
 
     def run(self):
-        print('Iniciando leitura')
+        print('Starting reading')
         while self.keepReading:
             if self.ser.isOpen():
                 lineRead = self.ser.readline().decode("utf-8").split(sep=";")
@@ -37,23 +40,23 @@ class SerialReader(Thread):
                                        'humidity': lineRead[0],
                                        'temperature': lineRead[1],
                                        })
-                print('Enviando', register, 'para', POST_URL)
+                print('Posting: ', register, 'on:', self.POST_URL)
                 try:
-                    result = requests.post(POST_URL, data=register)
+                    result = requests.post(self.POST_URL, data=register)
                     print('Post result:', result.text)
                 except Exception as error:
-                    print('Erro ao enviar:', error)
+                    print('Erro at post:', error)
             else:
-                print('Porta serial nao aberta:', datetime.now())
+                print('Serial dor not open. Time:', datetime.now())
 
     def stopReading(self):
-        print('Parando leitura')
+        print('Stoping reading')
         self.keepReading = False
 
     def restartReading(self):
-        print('Reiniciando leitura')
+        print('Restarting reading')
         self.keepReading = True
 
     def setReadingInterval(self, seconds):
-        print('Alterando intervalo de leitura no Arduino para', seconds, 'segundos')
+        print('Changing reading interval on Arduino to', seconds, 'seconds')
         # Pass to arduino

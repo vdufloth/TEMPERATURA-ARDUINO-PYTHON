@@ -1,0 +1,5 @@
+{
+    "arduino_location": "/dev/ttyACM0",
+    "serial_port": 9600,
+    "server_url": "http://example.com/api/data"
+}

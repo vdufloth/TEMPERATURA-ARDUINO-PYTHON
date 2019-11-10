@@ -24,6 +24,6 @@ elif (arg1 == 'time'):
         arg2 = sys.argv[2]
     except:
         arg2 = 2
-        print('Sem parametro de tempo. Utilizando tempo padrão de 2 segundos')
+        print('No time parameter. Using default, 2 seconds')
     if (sr.isAlive):
         sr.setReadingInterval(arg2)
