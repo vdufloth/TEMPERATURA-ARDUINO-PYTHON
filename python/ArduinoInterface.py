@@ -36,16 +36,9 @@ class SerialReader(Thread):
             if self.ser.isOpen():
                 lineRead = self.ser.readline().decode("utf-8").split(sep=";")
                 time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                register = json.dumps({'readtime': time,
-                                       'humidity': lineRead[0],
-                                       'temperature': lineRead[1],
-                                       })
-                print('Posting: ', register, 'on:', self.POST_URL)
-                try:
-                    result = requests.post(self.POST_URL, data=register)
-                    print('Post result:', result.text)
-                except Exception as error:
-                    print('Erro at post:', error)
+
+                csvFile = open('./registers.csv', 'a')
+                csvFile.write(time+','+lineRead[0]+','+lineRead[1]+'\n')
             else:
                 print('Serial dor not open. Time:', datetime.now())
 
