@@ -26,5 +26,5 @@ void loop()
     Serial.print(";");
     Serial.print(temp); //TEMPERATURE
     Serial.println(";");
-    delay(2000); //Delay 2 sec.
+    delay(300000); //Delay 2 sec.
 }
